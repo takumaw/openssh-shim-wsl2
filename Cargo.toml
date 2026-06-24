@@ -1,0 +1,34 @@
+[package]
+name = "openssh-shim-wsl2"
+version = "0.1.0"
+edition = "2024"
+license = "Apache-2.0"
+publish = false
+authors = ["Takuma WATANABE"]
+description = "WSL2 OpenSSH shims for Windows shells."
+repository = "https://github.com/takumaw/openssh-shim-wsl2"
+readme = "README.md"
+keywords = ["ssh", "wsl2", "shim", "windows"]
+categories = ["command-line-utilities"]
+
+[lib]
+name = "openssh_shim_wsl2"
+path = "src/lib.rs"
+
+[[bin]]
+name = "ssh"
+path = "src/bin/ssh.rs"
+
+[[bin]]
+name = "scp"
+path = "src/bin/scp.rs"
+
+[[bin]]
+name = "sftp"
+path = "src/bin/sftp.rs"
+
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+strip = true

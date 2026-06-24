@@ -1,0 +1,74 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  release:
+    name: Build and Release
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust Cache
+        uses: swatinem/rust-cache@v2
+
+      - name: Run Tests
+        run: cargo test
+
+      - name: Build Release
+        run: cargo build --release
+
+      - name: Prepare Staging and Zip
+        shell: pwsh
+        run: |
+          $version = "${{ github.ref_name }}".TrimStart('v')
+          $zipName = "openssh-shim-wsl2-${{ github.ref_name }}-x86_64-pc-windows-msvc.zip"
+          
+          # Create staging directory
+          $staging = New-Item -ItemType Directory -Path (Join-Path $env:RUNNER_TEMP "staging")
+          
+          # Copy release artifacts
+          Copy-Item -Path "target/release/ssh.exe" -Destination $staging.FullName
+          Copy-Item -Path "target/release/scp.exe" -Destination $staging.FullName
+          Copy-Item -Path "target/release/sftp.exe" -Destination $staging.FullName
+          Copy-Item -Path "README.md" -Destination $staging.FullName
+          Copy-Item -Path "LICENSE.txt" -Destination $staging.FullName
+          
+          # Zip the staging folder
+          Compress-Archive -Path "$($staging.FullName)\*" -DestinationPath $zipName -Force
+          
+          # Generate SHA256SUMS.txt in correct format
+          $hash = Get-FileHash -Algorithm SHA256 -Path $zipName
+          $hashText = "$($hash.Hash.ToLower())  $zipName"
+          $hashText | Out-File -FilePath SHA256SUMS.txt -Encoding ascii
+          
+          # Extract release notes from HISTORY.md
+          $history = Get-Content HISTORY.md -Raw
+          # Matches "## <version>" until next "##" or end of file
+          if ($history -match "(?s)##\s+$version\s*\r?\n(.*?)(?=\r?\n##|$)") {
+              $notes = $matches[1].Trim()
+              $notes | Out-File -FilePath release_notes.md -Encoding utf8
+          } else {
+              "Release $version" | Out-File -FilePath release_notes.md -Encoding utf8
+          }
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          body_path: release_notes.md
+          files: |
+            openssh-shim-wsl2-*.zip
+            SHA256SUMS.txt
