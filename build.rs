@@ -11,7 +11,7 @@ fn main() {
     if std::env::var("CARGO_CFG_TARGET_OS").unwrap_or_default() == "windows" {
         let mut res = winres::WindowsResource::new();
         res.set("CompanyName", "Takuma WATANABE");
-        
+
         // Dynamically combine start year and current year for copyright display
         let start_year = 2026;
         let this_year = current_year();
@@ -21,7 +21,7 @@ fn main() {
             format!("(C) {} Takuma WATANABE", start_year)
         };
         res.set("LegalCopyright", &copyright);
-        
+
         res.set("ProductName", "openssh-shim-wsl2");
         if let Err(e) = res.compile() {
             eprintln!("warning: failed to compile Windows resources: {e}");
