@@ -36,7 +36,7 @@ jobs:
         shell: pwsh
         run: ./tests/smoke_test.ps1
       - name: Upload Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: openssh-shim-wsl2-ci
           path: |
