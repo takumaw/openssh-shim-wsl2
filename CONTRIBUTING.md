@@ -25,11 +25,23 @@ target\release\sftp.exe
 
 ## Test
 
+CI focuses on unit tests and release builds. End-to-end tests requiring a real SSH server or a configured WSL2 distribution are not required in CI.
+
+### Unit tests
+
+Most tests are Rust unit tests located in `src/`. You can run them using:
+
 ```powershell
 cargo test
 ```
 
-Most tests are Rust unit tests located in `src/`. CI focuses on these unit tests and release builds. End-to-end tests requiring a real SSH server or a configured WSL2 distribution are not required in CI.
+### Smoke tests
+
+You can run the binary smoke test locally to verify that the built executables (`ssh.exe`, `scp.exe`, and `sftp.exe`) can launch successfully and exit with a non-zero exit code (typically `255` or `-1` depending on whether WSL is installed but unconfigured):
+
+```powershell
+./tests/smoke_test.ps1
+```
 
 ## Source layout
 

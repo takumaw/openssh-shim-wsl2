@@ -29,6 +29,9 @@ jobs:
         run: cargo test
       - name: Build Release
         run: cargo build --release
+      - name: Run Smoke Test
+        shell: pwsh
+        run: ./tests/smoke_test.ps1
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
